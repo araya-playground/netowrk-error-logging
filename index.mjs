@@ -9,7 +9,7 @@ app.use(
 );
 app.use(express.urlencoded());
 
-PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000
 
 const ONE_DAY = 2592000;
 
