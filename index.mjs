@@ -28,6 +28,11 @@ const NEL = JSON.stringify({
 	max_age: ONE_DAY
 })
 
+const ContentSecurityPolicy = `
+  default-src 'self';
+  style-src 'self' example.com;
+  report-uri http://localhost:${PORT}/csp-reports
+`.replace(/\s{2,}/g, ' ').trim();
 
 app.get('/', (request, response) => {
 	// Note: report_to and not report-to for NEL.
@@ -39,6 +44,8 @@ app.get('/', (request, response) => {
 	response.set(
 		'Report-To', ReportTo
 	);
+
+	response.set('Content-Security-Policy', ContentSecurityPolicy)
 
 	response.sendFile(path.resolve(process.cwd(), 'index.html'));
 });
@@ -55,6 +62,12 @@ app.post('/network-reports', (request, response) => {
 	console.log(`${request.body.length} Network error reports:`);
 	echoReports(request, response);
 });
+
+app.post('/csp-reports', (req, res) => {
+	console.log('Received CSP reports: ', req.body)
+
+	res.sendStatus(200)
+})
 
 app.get('/throw-500-error', (req, res) => {
 	res.status(500).end();
