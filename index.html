@@ -13,11 +13,12 @@
   </head>
   <body>
     Hello
-    <script src="./not-exist.js"></script>
     <script>
       window.addEventListener("load", async () => {
         await fetch("/throw-500-error");
       });
     </script>
+    <script src="./not-exist.js"></script>
+    <script src="http://not-exist.araya.dev"></script>
   </body>
 </html>
