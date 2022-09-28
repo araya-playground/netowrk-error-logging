@@ -7,6 +7,7 @@ app.use(
 		type: ['application/json', 'application/reports+json'],
 	}),
 );
+
 app.use(express.urlencoded());
 
 const PORT = process.env.PORT || 3000
@@ -15,17 +16,24 @@ const ONE_DAY = 2592000;
 
 const NEL_REPORT_GROUP = "network-errors"
 
+// TODO: replace origin
+// NEL doesn't work on localhost
+const ORIGIN = ""
+
 const ReportTo = JSON.stringify({
-	gorup: NEL_REPORT_GROUP,
+	group: NEL_REPORT_GROUP,
 	max_age: ONE_DAY,
-	end_points: [{
-		url: `http://localhost:${PORT}/network-reports`
-	}]
+	endpoints: [{
+		// url: `http://localhost:${PORT}/network-reports`,
+		url: `${ORIGIN}/network-reports`
+	}],
+	include_subdomains: true
 })
 
 const NEL = JSON.stringify({
 	report_to: NEL_REPORT_GROUP,
-	max_age: ONE_DAY
+	max_age: ONE_DAY,
+	include_subdomains: true
 })
 
 const ContentSecurityPolicy = `
@@ -45,7 +53,7 @@ app.get('/', (request, response) => {
 		'Report-To', ReportTo
 	);
 
-	response.set('Content-Security-Policy', ContentSecurityPolicy)
+	response.set('Content-Security-Policy-Report-Only', ContentSecurityPolicy)
 
 	response.sendFile(path.resolve(process.cwd(), 'index.html'));
 });
@@ -59,6 +67,13 @@ function echoReports(request, response) {
 }
 
 app.post('/network-reports', (request, response) => {
+	response.set(
+		"access-control-allow-origin", "*",
+	)
+	response.set(
+		"access-control-allow-methods", "POST"
+	)
+	response.set("access-control-allow-headers", "Content-Type")
 	console.log(`${request.body.length} Network error reports:`);
 	echoReports(request, response);
 });
